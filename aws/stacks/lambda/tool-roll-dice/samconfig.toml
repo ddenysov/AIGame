@@ -3,8 +3,8 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "tool-roll-dice"
-s3_prefix = "tool-roll-dice"
+stack_name = "ai-game-tool-roll-dice"
+s3_prefix = "ai-game-tool-roll-dice"
 region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
