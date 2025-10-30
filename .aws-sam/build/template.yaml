@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Root SAM Template for AI Game - Infrastructure
+Resources:
+  LambdaStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: LambdaStack/template.yaml
+    Metadata:
+      SamResourceId: LambdaStack
+  AgentMasterStack:
+    Type: AWS::Serverless::Application
+    DependsOn: LambdaStack
+    Properties:
+      Location: AgentMasterStack/template.yaml
+      Parameters:
+        FoundationModel: anthropic.claude-3-sonnet-20240229-v1:0
+        AgentInstruction: You are AgentMaster, a helpful AI assistant that can help
+          users with various tasks.
+        ToolRollDiceLambdaArn:
+          Fn::GetAtt:
+          - LambdaStack
+          - Outputs.ToolRollDiceFunctionArn
+    Metadata:
+      SamResourceId: AgentMasterStack
+Outputs:
+  ToolRollDiceFunctionArn:
+    Description: The ARN of the ToolRollDice Lambda Function
+    Value:
+      Fn::GetAtt:
+      - LambdaStack
+      - Outputs.ToolRollDiceFunctionArn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-ToolRollDiceFunctionArn
+  ToolRollDiceFunctionName:
+    Description: The Name of the ToolRollDice Lambda Function
+    Value:
+      Fn::GetAtt:
+      - LambdaStack
+      - Outputs.ToolRollDiceFunctionName
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-ToolRollDiceFunctionName
+  AgentMasterId:
+    Description: The ID of the AgentMaster Bedrock Agent
+    Value:
+      Fn::GetAtt:
+      - AgentMasterStack
+      - Outputs.AgentId
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AgentMasterId
+  AgentMasterArn:
+    Description: The ARN of the AgentMaster Bedrock Agent
+    Value:
+      Fn::GetAtt:
+      - AgentMasterStack
+      - Outputs.AgentArn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AgentMasterArn
+  AgentMasterAliasId:
+    Description: The ID of the AgentMaster Alias
+    Value:
+      Fn::GetAtt:
+      - AgentMasterStack
+      - Outputs.AgentAliasId
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AgentMasterAliasId
+  AgentMasterAliasArn:
+    Description: The ARN of the AgentMaster Alias
+    Value:
+      Fn::GetAtt:
+      - AgentMasterStack
+      - Outputs.AgentAliasArn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AgentMasterAliasArn

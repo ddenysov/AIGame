@@ -1,0 +1,20 @@
+version = 0.1
+
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "agent-master"
+s3_prefix = "agent-master"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+parameter_overrides = [
+    "FoundationModel=anthropic.claude-3-sonnet-20240229-v1:0",
+    "AgentInstruction=You are AgentMaster, a helpful AI assistant that can help users with various tasks."
+]
+
+[default.build]
+[default.build.parameters]
+cached = true
+parallel = true
+

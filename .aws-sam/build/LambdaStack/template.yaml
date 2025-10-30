@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lambda Functions for AI Game
+Resources:
+  ToolRollDiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ToolRollDice
+      Handler: src/handlers/ToolRollDice.handler
+      Runtime: nodejs20.x
+      CodeUri: ToolRollDiceFunction
+      Description: Lambda function to roll dice for the game
+      MemorySize: 128
+      Timeout: 10
+      Architectures:
+      - arm64
+      Environment:
+        Variables:
+          LOG_LEVEL: INFO
+    Metadata:
+      SamResourceId: ToolRollDiceFunction
+Outputs:
+  ToolRollDiceFunctionArn:
+    Description: The ARN of the ToolRollDice Lambda Function
+    Value:
+      Fn::GetAtt:
+      - ToolRollDiceFunction
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-ToolRollDiceFunctionArn
+  ToolRollDiceFunctionName:
+    Description: The Name of the ToolRollDice Lambda Function
+    Value:
+      Ref: ToolRollDiceFunction
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-ToolRollDiceFunctionName

@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Bedrock Agent - AgentMaster
+Parameters:
+  FoundationModel:
+    Type: String
+    Default: anthropic.claude-3-sonnet-20240229-v1:0
+    Description: Foundation model ID for the Bedrock Agent
+    AllowedValues:
+    - anthropic.claude-v2
+    - anthropic.claude-v2:1
+    - anthropic.claude-3-sonnet-20240229-v1:0
+    - anthropic.claude-3-haiku-20240307-v1:0
+    - anthropic.claude-instant-v1
+  AgentInstruction:
+    Type: String
+    Description: Instructions for the Bedrock Agent (loaded from instruction.txt)
+Resources:
+  AgentMasterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: AgentMasterRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: bedrock.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnLike:
+              aws:SourceArn:
+                Fn::Sub: arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+      Policies:
+      - PolicyName: BedrockAgentPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - bedrock:InvokeModel
+            - bedrock:InvokeModelWithResponseStream
+            Resource:
+              Fn::Sub: arn:aws:bedrock:${AWS::Region}::foundation-model/*
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+              Fn::Sub: arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/bedrock/agents/*
+  AgentMaster:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: AgentMaster
+      AgentResourceRoleArn:
+        Fn::GetAtt:
+        - AgentMasterRole
+        - Arn
+      Description: Master AI Agent powered by AWS Bedrock
+      FoundationModel:
+        Ref: FoundationModel
+      Instruction:
+        Ref: AgentInstruction
+      IdleSessionTTLInSeconds: 1800
+      AutoPrepare: true
+  AgentMasterAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentAliasName: prod
+      AgentId:
+        Ref: AgentMaster
+      Description: Production alias for AgentMaster
+Outputs:
+  AgentId:
+    Description: The ID of the Bedrock Agent
+    Value:
+      Ref: AgentMaster
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AgentId
+  AgentArn:
+    Description: The ARN of the Bedrock Agent
+    Value:
+      Fn::GetAtt:
+      - AgentMaster
+      - AgentArn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AgentArn
+  AgentAliasId:
+    Description: The ID of the Agent Alias
+    Value:
+      Fn::GetAtt:
+      - AgentMasterAlias
+      - AgentAliasId
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AgentAliasId
+  AgentAliasArn:
+    Description: The ARN of the Agent Alias
+    Value:
+      Fn::GetAtt:
+      - AgentMasterAlias
+      - AgentAliasArn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AgentAliasArn
+  AgentRoleArn:
+    Description: The ARN of the Agent IAM Role
+    Value:
+      Fn::GetAtt:
+      - AgentMasterRole
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AgentRoleArn
