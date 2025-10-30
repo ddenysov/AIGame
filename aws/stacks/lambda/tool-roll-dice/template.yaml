@@ -1,24 +1,46 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Lambda Functions for AI Game
+Description: Lambda Function for Rolling Dice Tool
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 128
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
 
 Resources:
-  # Lambda Function for Rolling Dice Tool
   ToolRollDiceFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ToolRollDice
-      Handler: src/handlers/ToolRollDice.handler
-      Runtime: nodejs20.x
-      CodeUri: ../../../../
-      Description: Lambda function to roll dice for the game
-      MemorySize: 128
-      Timeout: 10
-      Architectures:
-        - arm64
+      Description: Lambda function to roll dice for Bedrock Agent
+      CodeUri: ../../../../src/handlers/
+      Handler: ToolRollDice.handler
       Environment:
         Variables:
           LOG_LEVEL: INFO
+      Tags:
+        Project: AIGame
+        Component: Lambda
+        Tool: RollDice
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: "es2020"
+        EntryPoints:
+          - ToolRollDice.js
+
+  # Lambda Permission for Bedrock Agent to invoke this function
+  ToolRollDiceFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ToolRollDiceFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
 
 Outputs:
   ToolRollDiceFunctionArn:

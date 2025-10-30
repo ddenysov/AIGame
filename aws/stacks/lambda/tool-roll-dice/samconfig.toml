@@ -3,11 +3,12 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "ai-game-infrastructure"
-s3_prefix = "ai-game-infrastructure"
+stack_name = "tool-roll-dice"
+s3_prefix = "tool-roll-dice"
 region = "us-east-1"
 confirm_changeset = true
-capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
+capabilities = "CAPABILITY_IAM"
+resolve_s3 = true
 
 [default.build]
 [default.build.parameters]
